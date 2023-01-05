@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func (app *application) routes() *httprouter.Router {
+func (app *Application) routes() *httprouter.Router {
 
 	router := httprouter.New()
 

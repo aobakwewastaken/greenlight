@@ -11,18 +11,18 @@ import (
 
 const version = "0.0.1"
 
-type config struct {
+type Config struct {
 	port int
 	env  string
 }
 
-type application struct {
-	config config
+type Application struct {
+	config Config
 	logger *log.Logger
 }
 
 func main() {
-	var cfg config
+	var cfg Config
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment(development|staging|prod")
@@ -31,7 +31,7 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
-	app := &application{
+	app := &Application{
 		config: cfg,
 		logger: logger,
 	}
