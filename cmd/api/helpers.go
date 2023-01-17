@@ -72,7 +72,7 @@ func (app *Application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 			if unmarshalTypeError.Field != "" {
 				return fmt.Errorf("body contains incorrect JSON type for field %q", unmarshalTypeError.Field)
 			}
-			return fmt.Errorf("body contains incorrect JSON type (at character %d", unmarshalTypeError.Offset)
+			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
 		case errors.Is(err, io.EOF):
 			return errors.New("body must not be empty")
 		case strings.HasPrefix(err.Error(), "json: unknown field"):
@@ -86,6 +86,9 @@ func (app *Application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 			return err
 		}
 	}
+
+	// calling the decode again to an empty and anonymous struct, to check if
+	// the request body only had one single json
 	err = decoder.Decode(&struct{}{})
 	if err != io.EOF {
 		return errors.New("body must only contain a single JSON value")
