@@ -23,6 +23,7 @@ func (app *Application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 		app.badRequestResponse(w, r, err)
 		return
 	}
+	// this is a messy way of validating
 	v := validator.New()
 	v.Check(input.Title != "", "title", "must be provided")
 	v.Check(len(input.Title) <= 500, "title", "must not be more than 500 bytes long")
@@ -34,6 +35,12 @@ func (app *Application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	v.Check(input.Genres != nil, "genres", "must be provided")
 	v.Check(len(input.Genres) >= 1, "genres", "must contain at least one genre")
 	v.Check(len(input.Genres) <= 1, "genres", "must not contain more than five genres")
+	v.Check(validator.Unique(input.Genres), "genres", "must ont contain duplicates")
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
 	fmt.Fprintf(w, "%+v\n", input)
 }
 
