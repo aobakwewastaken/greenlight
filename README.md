@@ -12,6 +12,10 @@ installation on mac
 
 ### To create migrations with golang-migrate
 
-In your terminal run:
+To generate your migration file with sequential numbering:
 
 `migrate create -seq -ext=.sql -dir=./migrations migration_name`
+
+To run your migration file:
+
+`migrate -database "dsn" -path ./migrations up`
