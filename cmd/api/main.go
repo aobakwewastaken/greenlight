@@ -20,6 +20,9 @@ type Config struct {
 	env  string
 	db struct {
 		dsn string
+		maxOpenConns int
+		maxIdleConns int
+		maxIdleTime string
 	}
 }
 
@@ -35,7 +38,11 @@ func main() {
 	flag.StringVar(&cfg.env, "env", "development", "Environment(development|staging|prod")
 	
 	// TODO: Add the dsn to env variables
-	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://okay:postgres@localhost/greenlight?sslmode=disable", "PostgreSQL DSN")
+
+	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "Postgres max open connections")
+	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "Postgres max idle connections")
+	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "Postgres max connections idle time")
 
 	flag.Parse()
 
@@ -73,6 +80,16 @@ func openDB(cfg Config) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	db.SetMaxOpenConns(cfg.db.maxOpenConns)
+	db.SetMaxIdleConns(cfg.db.maxIdleConns)
+	
+	duration, err := time.ParseDuration(cfg.db.maxIdleTime)
+
+	if err != nil {
+		return nil, err
+	}
+	db.SetConnMaxIdleTime(duration)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
