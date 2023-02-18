@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/aobakwewastaken/greenlight/internal/data"
 	_ "github.com/lib/pq"
 )
 
@@ -29,6 +30,7 @@ type Config struct {
 type Application struct {
 	config Config
 	logger *log.Logger
+	models data.Models
 }
 
 func main() {
@@ -38,7 +40,7 @@ func main() {
 	flag.StringVar(&cfg.env, "env", "development", "Environment(development|staging|prod")
 	
 	// TODO: Add the dsn to env variables
-	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://okay:postgres@localhost/greenlight?sslmode=disable", "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
 
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "Postgres max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "Postgres max idle connections")
@@ -60,6 +62,7 @@ func main() {
 	app := &Application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModel(db),
 	}
 
 	srv := &http.Server{
@@ -94,7 +97,7 @@ func openDB(cfg Config) (*sql.DB, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = db.PingContext(ctx	)
+	err = db.PingContext(ctx)
 	if err != nil {
 		return nil, err
 	}
